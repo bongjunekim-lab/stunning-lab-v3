@@ -96,27 +96,30 @@ if st.session_state.current_target_idx < len(target_sentence):
 else:
     word_jamos = []
 
-# 후보 자모 10개 (정답 + 랜덤)
-candidates = word_jamos + random.sample(JAMOS, max(0, 10 - len(word_jamos)))
+# 후보 자모 10개 (정답 + 랜덤, 중복 제거)
+candidates = list(set(word_jamos))  # 정답 자모 중복 제거
+while len(candidates) < 10:
+    rand_jamo = random.choice(JAMOS)
+    if rand_jamo not in candidates:
+        candidates.append(rand_jamo)
 random.shuffle(candidates)
 
-cols = st.columns(10)
-for i, key in enumerate(candidates):
-    with cols[i]:
-        if st.button(key, key=f"btn_{i}", use_container_width=True):
+# 2줄 자판 표시
+half = len(candidates)//2
+row1 = st.columns(half)
+row2 = st.columns(len(candidates)-half)
+
+for i, key in enumerate(candidates[:half]):
+    with row1[i]:
+        if st.button(key, key=f"btn_row1_{i}", use_container_width=True):
             st.session_state.current_input.append(key)
-            # 현재 글자 자모 확인
-            current_target_char = target_sentence[st.session_state.current_target_idx]
-            correct_jamos = decompose(current_target_char)
-            if st.session_state.current_input == correct_jamos:
-                st.session_state.completed_indices.add(st.session_state.current_target_idx)
-                st.session_state.current_target_idx += 1
-                st.session_state.current_input = []
-                time.sleep(0.2)
-                st.rerun()
-            elif len(st.session_state.current_input) > len(correct_jamos):
-                st.session_state.current_input = []  # 오입력 시 리셋
-                st.rerun()
+            st.rerun()
+
+for i, key in enumerate(candidates[half:]):
+    with row2[i]:
+        if st.button(key, key=f"btn_row2_{i}", use_container_width=True):
+            st.session_state.current_input.append(key)
+            st.rerun()
 
 # Reset 버튼
 if st.button("Reset 🔄"):

@@ -108,7 +108,7 @@ for idx, char in enumerate(target_sentence):
         if idx in st.session_state.completed_indices:
             st.markdown(f"<div class='char-box-yellow char-box-blue'>{char}</div>", unsafe_allow_html=True)
         
-        # 🌟 주황색 타겟 단어 하이라이팅 로직 (안전하고 확실하게 변환 완료)
+        # 현재 조립 차례인 글자 하이라이팅 (에러 유발 구문 완전 삭제 후 간결화)
         elif idx == cur_idx:
             if len(st.session_state.current_input) > 0:
                 build_str = ""
@@ -117,21 +117,18 @@ for idx, char in enumerate(target_sentence):
                 st.markdown(f"<div class='char-box-yellow char-box-target'>{build_str}</div>", unsafe_allow_html=True)
             else:
                 st.markdown(f"<div class='char-box-yellow char-box-target'>{char}</div>", unsafe_allow_html=True)
-        
-        # 단어 단위 연동 묶음 표시 (문법적 에러 가능성을 원천 차단한 완벽한 고정 배열 조건문)
-        elif (cur_idx in [0, 1] and idx in) or (cur_idx in [3, 4] and idx in) or (cur_idx in [6, 7, 8] and idx in [6, 7, 8]):
-            st.markdown(f"<div class='char-box-yellow char-box-target'>{char}</div>", unsafe_allow_html=True)
-            
+                
+        # 아직 조립하지 않은 기본 글자 상태
         else:
             st.markdown(f"<div class='char-box-yellow'>{char}</div>", unsafe_allow_html=True)
 
 # 6. 현재 조립 단계별 힌트 자모음 정의 (간접 배경색 마킹용)
 hint_bricks = set()
-if cur_idx in:
+if cur_idx in [0, 1]:
     hint_bricks = {'ㄴ', 'ㅏ', 'ㅡ'}
-elif cur_idx in:
+elif cur_idx in [3, 4]:
     hint_bricks = {'ㄴ', 'ㅓ', 'ㄹ', 'ㅡ'}
-elif cur_idx in:
+elif cur_idx in [6, 7, 8]:
     hint_bricks = {'ㅅ', 'ㅏ', 'ㄹ', 'ㅇ', 'ㅎ', 'ㅐ'}
 
 # 7. 실시간 가로형 결합 판정 시스템

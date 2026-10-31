@@ -12,29 +12,60 @@ st.markdown("""
     .slot-container { 
         background-color: #343a40; 
         border-radius: 15px; 
-        padding: 30px; 
+        padding: 40px 20px; 
         text-align: center; 
-        min-height: 250px; 
+        min-height: 180px; 
         margin-bottom: 25px; 
         box-shadow: inset 0px 0px 20px rgba(0,0,0,0.6); 
     }
-    .guide-text { color: #FFD43B; font-size: 32px; letter-spacing: 5px; font-weight: bold; margin-bottom: 20px; text-shadow: 1px 1px #000; }
     
-    /* 발사되어 올라온 브릭 레이어 스타일 */
-    .brick-layer { 
-        border-radius: 8px; 
-        margin: 6px auto; 
-        padding: 12px; 
-        width: 50%; 
-        font-weight: bold; 
-        font-size: 24px; 
-        text-align: center; 
-        box-shadow: 0px 5px #00000033;
+    /* 문장 정렬 컨테이너 */
+    .sentence-box {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    
+    /* 기본 가이드 상태인 노란색 레고 글자 블록 스타일 */
+    .lego-char-guide {
+        color: #FFD43B;
+        font-size: 34px;
+        font-weight: bold;
+        padding: 10px 20px;
+        border: 2px solid #FFD43B;
+        border-radius: 8px;
+        background-color: transparent;
+        text-shadow: 1px 1px #000;
+        transition: all 0.3s ease;
+    }
+    
+    /* 하단 버튼 클릭 시 위로 발사되어 파란색으로 착 채워진 상태의 스타일 */
+    .lego-char-filled {
+        color: white;
+        background-color: #228BE6;
+        border: 2px solid #1c7ed6;
+        box-shadow: 0px 4px #1864ab;
+        transform: translateY(-5px);
+    }
+    
+    /* 띄어쓰기(스페이스) 블록 스타일 */
+    .lego-space-block {
+        width: 30px;
+        height: 50px;
+        border: 2px dashed #555;
+        border-radius: 6px;
+        background-color: rgba(255,255,255,0.05);
+    }
+    
+    /* 실제 채워진 띄어쓰기 블록 스타일 */
+    .lego-space-filled {
+        border: 2px solid #228BE6;
+        background-color: rgba(34, 139, 230, 0.2);
     }
     
     .success-banner { background-color: #d4edda; color: #155724; border: 2px solid #c3e6cb; border-radius: 10px; padding: 15px; text-align: center; font-size: 22px; font-weight: bold; margin-top: 15px; }
-    
-    /* 관리자 입력창 스타일 설정 */
     .admin-box { background-color: #e8f4fd; border-radius: 10px; padding: 15px; margin-bottom: 20px; border: 1px solid #74c0fc; }
     </style>
 """, unsafe_allow_html=True)
@@ -42,15 +73,19 @@ st.markdown("""
 st.markdown("<div class='lego-title'>🧱 LEGO HANGEUL REVERSE TETRIS</div>", unsafe_allow_html=True)
 st.write("---")
 
-# 2. 게임 내부 저장소(데이터 세션) 초기화
+# 2. 게임 내부 상태 저장소 초기화
 if 'bricks' not in st.session_state:
     st.session_state.bricks = []
+if 'unlocked_chars' not in st.session_state:
+    st.session_state.unlocked_chars = set()
+if 'space_count' not in st.session_state:
+    st.session_state.space_count = 0
 
-# 🌟 [추가 기능] 배경 속 가이드 문구 관리자 입력 시스템
+# 🛠️ Developer Sandbox (화면 테스트용 문장 입력창)
 st.markdown("<div class='admin-box'>🛠️ <b>Developer Sandbox</b> (화면상 작동 테스트용 문장 설정)</div>", unsafe_allow_html=True)
 target_sentence = st.text_input("게임판에 띄우고 싶은 문장을 입력하세요:", value="나는 너를 사랑해")
 
-# 3. 미국인을 위한 사운드 및 미션 가이드 문구 (사용자가 입력한 문장이 실시간 반영됨)
+# 3. 미국인을 위한 사운드 및 미션 가이드 문구
 st.markdown(f"""
     <div class='mission-box'>
         <h3>🎵 Mission Sound: "Interactive Mode"</h3>
@@ -60,39 +95,46 @@ st.markdown(f"""
 
 # 4. 상단: 아래에서 위로 쌓이는 레고 조립판 시각화
 st.write("### 🏗️ Upward LEGO Assembly Board (상단 조립판)")
-st.markdown("<div class='slot-container'>", unsafe_allow_html=True)
+st.markdown("<div class='slot-container'><div class='sentence-box'>", unsafe_allow_html=True)
 
-# 사용자가 입력한 텍스트가 조립판 배경 속에 노란색 가이드 글씨로 실시간 표기됨
-st.markdown(f"<div class='guide-text'>{target_sentence}</div>", unsafe_allow_html=True)
-
-# 블록이 3층 -> 2층 -> 1층 순서로 위로 쌓이게 출력 (요청하신 빈 칸 제거 버전 유지)
-if len(st.session_state.bricks) >= 3:
-    st.markdown(f"<div class='brick-layer' style='background-color:#FCC419; color:black;'>[3층 / 받침] 🧱 {st.session_state.bricks}</div>", unsafe_allow_html=True)
-
-if len(st.session_state.bricks) >= 2:
-    st.markdown(f"<div class='brick-layer' style='background-color:#FA5252; color:white;'>[2층 / 모음] 🧱 {st.session_state.bricks}</div>", unsafe_allow_html=True)
-
-if len(st.session_state.bricks) >= 1:
-    st.markdown(f"<div class='brick-layer' style='background-color:#228BE6; color:white;'>[1st Floor / 첫자음] 🧱 {st.session_state.bricks}</div>", unsafe_allow_html=True)
-
-st.markdown("</div>", unsafe_allow_html=True)
-
-# 5. 한글 오토마타(조합) 판정 시스템
-if len(st.session_state.bricks) == 3:
-    if st.session_state.bricks == ['ㄴ', 'ㅡ', 'ㄴ']:
-        st.markdown("<div class='success-banner'>🎵 딸깍! (CLICK!) LEGO Assembled: 【 는 】 ✨</div>", unsafe_allow_html=True)
-        st.balloons()
+# 문장을 공백 기준으로 쪼개서 인덱싱하여 스페이스바 작동 구현
+space_idx = 0
+for char in target_sentence:
+    if char == " ": # 띄어쓰기 공간 처리
+        space_idx += 1
+        # 스페이스바를 누른 횟수가 이 공백의 위치에 도달하면 파란색으로 활성화
+        if st.session_state.space_count >= space_idx:
+            st.markdown("<div class='lego-space-block lego-space-filled'></div>", unsafe_allow_html=True)
+        else:
+            st.markdown("<div class='lego-space-block'></div>", unsafe_allow_html=True)
+        continue
+        
+    if char in st.session_state.unlocked_chars:
+        st.markdown(f"<div class='lego-char-guide lego-char-filled'>{char}</div>", unsafe_allow_html=True)
     else:
-        combined = "".join(st.session_state.bricks)
-        st.markdown(f"<div class='success-banner'>🎵 딸깍! (CLICK!) LEGO Assembled: 【 {combined} 】 ✨</div>", unsafe_allow_html=True)
-    st.session_state.bricks = [] # 완성 후 초기화
+        st.markdown(f"<div class='lego-char-guide'>{char}</div>", unsafe_allow_html=True)
 
-# 6. 하단: 자모음 보관소 (키보드 앤 슈팅 시스템)
+st.markdown("</div></div>", unsafe_allow_html=True)
+
+# 5. 한글 오토마타 조립 판정 로직
+if len(st.session_state.bricks) > 0:
+    if st.session_state.bricks == ['ㄴ', 'ㅏ']:
+        st.session_state.unlocked_chars.add("나")
+        st.markdown("<div class='success-banner'>🎵 딸깍! (CLICK!) LEGO 'ㄴ' + 'ㅏ' ➡️ 【 나 】 완성! ✨</div>", unsafe_allow_html=True)
+        st.session_state.bricks = []
+    elif st.session_state.bricks == ['ㄴ', 'ㅡ', 'ㄴ']:
+        st.session_state.unlocked_chars.add("는")
+        st.markdown("<div class='success-banner'>🎵 딸깍! (CLICK!) LEGO 'ㄴ' + 'ㅡ' + 'ㄴ' ➡️ 【 는 】 완성! ✨</div>", unsafe_allow_html=True)
+        st.balloons()
+        st.session_state.bricks = []
+    elif len(st.session_state.bricks) >= 3:
+        st.session_state.bricks = []
+
+# 6. 하단: 자모음 보관소 + 🌟 스페이스 바 자판 추가
 st.write("### ⌨️ LEGO Brick Keyboard (하단 자판)")
-st.info("Click the buttons below in order to shoot bricks upward! (Try: ㄴ ➡️ ㅡ ➡️ ㄴ)")
 
+# 상단 자모음 버튼 레이아웃
 col1, col2, col3, col4, col5 = st.columns(5)
-
 with col1:
     if st.button("🔵 ㄴ (Shoot!)", key="btn_n", use_container_width=True):
         st.session_state.bricks.append("ㄴ")
@@ -112,4 +154,12 @@ with col4:
 with col5:
     if st.button("🟡 Reset 🔄", key="btn_reset", use_container_width=True):
         st.session_state.bricks = []
+        st.session_state.unlocked_chars = set()
+        st.session_state.space_count = 0
         st.rerun()
+
+# 🌟 하단에 길쭉한 스페이스바 버튼 배치
+st.write("")
+if st.button("⌨️ Space Bar (간격 띄우기) ───", key="btn_space", use_container_width=True):
+    st.session_state.space_count += 1
+    st.rerun()

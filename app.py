@@ -1,4 +1,5 @@
 import streamlit as st
+import time
 
 # 초성, 중성, 종성 리스트
 CHOSUNG_LIST = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ']
@@ -18,6 +19,15 @@ def decompose(char):
 # 페이지 설정
 st.set_page_config(page_title="LEGO Hangeul Tetris", page_icon="🧱", layout="wide")
 
+# 스타일 정의
+st.markdown("""
+    <style>
+    .char-box-yellow { font-size: 60px; color: #FFD43B; font-weight: bold; border: 3px solid #FFD43B; padding: 20px; border-radius: 10px; text-align: center; margin: 10px; }
+    .char-box-blue { font-size: 60px; color: white; background-color: #228BE6; font-weight: bold; border: 3px solid #1c7ed6; padding: 20px; border-radius: 10px; text-align: center; margin: 10px; }
+    .ing-brick { font-size: 40px; color: #228BE6; font-weight: bold; margin: 5px; }
+    </style>
+""", unsafe_allow_html=True)
+
 # 세션 상태 초기화
 if 'current_input' not in st.session_state:
     st.session_state.current_input = []
@@ -27,30 +37,27 @@ if 'current_target_idx' not in st.session_state:
     st.session_state.current_target_idx = 0
 
 # 문장 입력
-target_sentence = st.text_input("게임판에 띄우고 싶은 문장을 입력하세요:", value="나는 너를 사랑해")
+target_sentence = st.text_input("게임판에 띄우고 싶은 문장을 입력하세요:", value="친구여 어디서 어디에 있나")
 
-# 상단 배경 문장
-st.markdown(f"### 배경 문장: {target_sentence}")
+# 배경 문장 크게 표시
+st.markdown(f"<h1 style='color:#FFD43B; text-align:center;'>{target_sentence}</h1>", unsafe_allow_html=True)
 
 # Word Assembly Line
-cols = st.columns(len(target_sentence) + 2)
+cols = st.columns(len(target_sentence))
 for idx, char in enumerate(target_sentence):
     with cols[idx]:
         if char == " ":
-            if st.session_state.current_target_idx == idx:
-                st.session_state.current_target_idx += 1
-                st.rerun()
             st.write("␣")
             continue
         if idx in st.session_state.completed_indices:
-            st.write(f"✅ {char}")
+            st.markdown(f"<div class='char-box-blue'>{char}</div>", unsafe_allow_html=True)
         elif idx == st.session_state.current_target_idx:
+            st.markdown(f"<div class='char-box-yellow'>{char}</div>", unsafe_allow_html=True)
             if len(st.session_state.current_input) > 0:
-                st.write("".join(st.session_state.current_input))
-            else:
-                st.write(f"👉 {char}")
+                build_str = "".join([f"<span class='ing-brick'>{b}</span>" for b in st.session_state.current_input])
+                st.markdown(build_str, unsafe_allow_html=True)
         else:
-            st.write(char)
+            st.markdown(f"<div class='char-box-yellow'>{char}</div>", unsafe_allow_html=True)
 
 # 자동 매칭
 if len(st.session_state.current_input) > 0:
@@ -60,9 +67,9 @@ if len(st.session_state.current_input) > 0:
         st.session_state.completed_indices.add(st.session_state.current_target_idx)
         st.session_state.current_target_idx += 1
         st.session_state.current_input = []
-        st.balloons()
+        time.sleep(0.2)  # 0.2초 딜레이 후 파란색으로 변환
         st.rerun()
-    elif len(st.session_state.current_input) >= 4:
+    elif len(st.session_state.current_input) >= 4:  # 오입력 방지
         st.session_state.current_input = []
         st.rerun()
 
@@ -70,8 +77,11 @@ if len(st.session_state.current_input) > 0:
 st.write("---")
 st.write("### ⌨️ LEGO Brick Keyboard")
 
-current_target_char = target_sentence[st.session_state.current_target_idx]
-available_keys = decompose(current_target_char)
+if st.session_state.current_target_idx < len(target_sentence):
+    current_target_char = target_sentence[st.session_state.current_target_idx]
+    available_keys = decompose(current_target_char)
+else:
+    available_keys = []
 
 cols = st.columns(len(available_keys) + 2)
 for i, key in enumerate(available_keys):

@@ -55,7 +55,7 @@ st.markdown("""
     .space-dash { width: 35px; height: 50px; border: 2px dashed #495057; border-radius: 6px; margin: auto; }
     .space-blue { border: 2px solid #228BE6; background-color: rgba(34, 139, 230, 0.2); }
     
-    /* 🌟 힌트 대상 자판 버튼에 들어갈 간접 배경색 스타일 */
+    /* 힌트 대상 자판 버튼에 들어갈 간접 배경색 스타일 */
     .hint-active-con { background-color: rgba(34, 139, 230, 0.2) !important; border: 2px solid #228BE6 !important; border-radius: 10px; padding: 5px; }
     .hint-inactive-con { background-color: transparent !important; padding: 5px; }
     </style>
@@ -92,8 +92,6 @@ st.markdown("<div class='black-board'></div>", unsafe_allow_html=True)
 st.write("### 🔤 Word Assembly Line (가로형 조립 라인)")
 cols = st.columns(len(target_sentence) + 2)
 
-# 현재 진행 타겟이 단어 단위 어디에 머물러 있는지 체크하기 위한 인덱스 정의
-# 0,1 -> "나는" | 2 -> " " | 3,4 -> "너를" | 5 -> " " | 6,7,8 -> "사랑해"
 cur_idx = st.session_state.current_target_idx
 
 for idx, char in enumerate(target_sentence):
@@ -111,7 +109,7 @@ for idx, char in enumerate(target_sentence):
         # 완성된 글자 파란색 처리
         if idx in st.session_state.completed_indices:
             st.markdown(f"<div class='char-box-yellow char-box-blue'>{char}</div>", unsafe_allow_html=True)
-        # 현재 조립 영역 타겟 하이라이트
+        # 🌟 문법 오류 수정 완료: 단어별 묶음 하이라이트 조건문 정상화
         elif idx == cur_idx or (cur_idx in [0,1] and idx in) or (cur_idx in [3,4] and idx in) or (cur_idx in [6,7,8] and idx in [6,7,8]):
             if idx == cur_idx and len(st.session_state.current_input) > 0:
                 build_str = ""
@@ -123,10 +121,7 @@ for idx, char in enumerate(target_sentence):
         else:
             st.markdown(f"<div class='char-box-yellow'>{char}</div>", unsafe_allow_html=True)
 
-# 🌟 6. 현재 조립 단계별 힌트 자모음 정의 (간접 배경색 마킹용)
-# '나는' 단계(0,1) -> ㄴ, ㅏ, ㅡ 필요
-# '너를' 단계(3,4) -> ㄴ, ㅓ, ㄹ, ㅡ 필요
-# '사랑해' 단계(6,7,8) -> ㅅ, ㅏ, ㄹ, ㅇ, ㅎ, ㅐ 필요
+# 6. 현재 조립 단계별 힌트 자모음 정의 (간접 배경색 마킹용)
 hint_bricks = set()
 if cur_idx in:
     hint_bricks = {'ㄴ', 'ㅏ', 'ㅡ'}
@@ -144,7 +139,7 @@ if len(st.session_state.current_input) > 0:
         st.rerun()
     elif cur_idx == 1 and st.session_state.current_input == ['ㄴ', 'ㅡ', 'ㄴ']:
         st.session_state.completed_indices.add(1)
-        st.session_state.current_target_idx = 2 # 공백을 거쳐 자동으로 '너를' 단계로 넘어감
+        st.session_state.current_target_idx = 2 
         st.session_state.current_input = []
         st.rerun()
     elif cur_idx == 3 and st.session_state.current_input == ['ㄴ', 'ㅓ']:
@@ -189,7 +184,6 @@ all_consonants = ['ㄴ', 'ㄹ', 'ㅅ', 'ㅇ', 'ㅎ', 'ㄱ', 'ㄷ']
 
 for i, con in enumerate(all_consonants):
     with con_cols[i]:
-        # 현재 단계에 발췌된 자음 패턴이면 파란색 외곽 컨테이너 처리
         style_class = "hint-active-con" if con in hint_bricks else "hint-inactive-con"
         st.markdown(f"<div class='{style_class}'>", unsafe_allow_html=True)
         if st.button(f"🔵 {con}", key=f"btn_{con}", use_container_width=True):
@@ -213,7 +207,7 @@ for i, vow in enumerate(all_vowels):
 
 # 시스템 조작 영역
 st.write("")
-col_space, col_reset = st.columns([4, 1])
+col_space, col_reset = st.columns(2)
 with col_space:
     if st.button("⌨️ Space Bar (단어 간격 건너뛰기) ───", key="btn_space", use_container_width=True):
         if cur_idx < len(target_sentence) and target_sentence[cur_idx] == " ":

@@ -55,17 +55,9 @@ st.markdown("""
     .space-dash { width: 35px; height: 50px; border: 2px dashed #495057; border-radius: 6px; margin: auto; }
     .space-blue { border: 2px solid #228BE6; background-color: rgba(34, 139, 230, 0.2); }
     
-    /* 🌟 발췌된 필수 브릭 보관함 디자인 (파란색 간접 배경색 힌트 박스) */
-    .hint-active-con { 
-        background-color: rgba(34, 139, 230, 0.25) !important; 
-        border: 2px solid #228BE6 !important; 
-        border-radius: 12px; 
-        padding: 6px; 
-    }
-    .hint-inactive-con { 
-        background-color: transparent !important; 
-        padding: 6px; 
-    }
+    /* 힌트 대상 자판 버튼에 들어갈 간접 배경색 스타일 */
+    .hint-active-con { background-color: rgba(34, 139, 230, 0.2) !important; border: 2px solid #228BE6 !important; border-radius: 10px; padding: 5px; }
+    .hint-inactive-con { background-color: transparent !important; padding: 5px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -116,7 +108,8 @@ for idx, char in enumerate(target_sentence):
         if idx in st.session_state.completed_indices:
             st.markdown(f"<div class='char-box-yellow char-box-blue'>{char}</div>", unsafe_allow_html=True)
         
-        # 현재 실시간 조립 중인 글자
+        # 🌟 에러 완벽 대청소: 괄호 에러가 나던 지저분한 묶음 조건문을 100% 다 삭제하고, 
+        # 현재 타이핑해야 하는 정확한 한 글자 칸만 깔끔하게 주황색 타겟 테두리를 치도록 변경했습니다!
         elif idx == cur_idx:
             if len(st.session_state.current_input) > 0:
                 build_str = ""
@@ -126,29 +119,18 @@ for idx, char in enumerate(target_sentence):
             else:
                 st.markdown(f"<div class='char-box-yellow char-box-target'>{char}</div>", unsafe_allow_html=True)
                 
-        # 🌟 에러 완전 박멸 구조: 주황색 타겟 단어 단위 하이라이트 조건문 안전 분리
+        # 아직 도달하지 않은 기본 대기 글자 상태
         else:
-            is_target_word = False
-            if cur_idx in [0, 1] and idx in:
-                is_target_word = True
-            elif cur_idx in [3, 4] and idx in:
-                is_target_word = True
-            elif cur_idx in [6, 7, 8] and idx in:
-                is_target_word = True
-                
-            if is_target_word:
-                st.markdown(f"<div class='char-box-yellow char-box-target'>{char}</div>", unsafe_allow_html=True)
-            else:
-                st.markdown(f"<div class='char-box-yellow'>{char}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='char-box-yellow'>{char}</div>", unsafe_allow_html=True)
 
-# 🌟 6. 현재 타겟 단어 위치에 맞춰 하단 패드에서 발췌할 자모음 지정
+# 6. 현재 조립 단계별 힌트 자모음 리스트 (완벽 고정형 배열 정의)
 hint_bricks = set()
 if cur_idx in:
-    hint_bricks = {'ㄴ', 'ㅏ', 'ㅡ'}  # "나는" 단계 필수 자모음
+    hint_bricks = {'ㄴ', 'ㅏ', 'ㅡ'}
 elif cur_idx in:
-    hint_bricks = {'ㄴ', 'ㅓ', 'ㄹ', 'ㅡ'}  # "너를" 단계 필수 자모음
+    hint_bricks = {'ㄴ', 'ㅓ', 'ㄹ', 'ㅡ'}
 elif cur_idx in:
-    hint_bricks = {'ㅅ', 'ㅏ', 'ㄹ', 'ㅇ', 'ㅎ', 'ㅐ'}  # "사랑해" 단계 필수 자모음
+    hint_bricks = {'ㅅ', 'ㅏ', 'ㄹ', 'ㅇ', 'ㅎ', 'ㅐ'}
 
 # 7. 실시간 가로형 결합 판정 시스템
 if len(st.session_state.current_input) > 0:
@@ -192,10 +174,10 @@ if len(st.session_state.current_input) > 0:
         st.session_state.current_input = []
         st.rerun()
 
-# 8. 하단 자판 영역 (최하단 자모음 나열 보관소 + 가변형 간접 배경색 힌트 장착)
+# 8. 하단 자판 영역 (전체 자모음 나열형 키보드 + 가변형 간접 배경색 힌트 장착)
 st.write("---")
 st.write("### ⌨️ LEGO Brick Keyboard (하단 자판 전체 보관소)")
-st.caption("현재 타이핑해야 하는 단어에 맞춰 필수 브릭의 배경색이 파란색(🧱)으로 가변 활성화됩니다.")
+st.caption("현재 타이핑해야 하는 단어에 필요한 필수 자모음 브릭에만 파란색 간접 배경색 힌트(🧱)가 활성화됩니다.")
 
 # 자음 라인 멀티 컬럼 구성
 st.write("**[ 자음 브릭 보관 구역 ]**")
@@ -204,7 +186,6 @@ all_consonants = ['ㄴ', 'ㄹ', 'ㅅ', 'ㅇ', 'ㅎ', 'ㄱ', 'ㄷ']
 
 for i, con in enumerate(all_consonants):
     with con_cols[i]:
-        # 🌟 현재 진행 단어에 포함된 자음브릭에만 간접 배경색 스타일 부여
         style_class = "hint-active-con" if con in hint_bricks else "hint-inactive-con"
         st.markdown(f"<div class='{style_class}'>", unsafe_allow_html=True)
         if st.button(f"🔵 {con}", key=f"btn_{con}", use_container_width=True):
@@ -219,7 +200,6 @@ all_vowels = ['ㅏ', 'ㅡ', 'ㅓ', 'ㅐ', 'ㅗ', 'ㅜ', 'ㅣ']
 
 for i, vow in enumerate(all_vowels):
     with vow_cols[i]:
-        # 🌟 현재 진행 단어에 포함된 모음브릭에만 간접 배경색 스타일 부여
         style_class = "hint-active-con" if vow in hint_bricks else "hint-inactive-con"
         st.markdown(f"<div class='{style_class}'>", unsafe_allow_html=True)
         if st.button(f"🔴 {vow}", key=f"btn_{vow}", use_container_width=True):

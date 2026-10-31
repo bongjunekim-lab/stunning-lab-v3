@@ -1,10 +1,5 @@
 import streamlit as st
 import time
-import random
-
-# 자모 리스트
-JAMOS = ['ㄱ','ㄴ','ㄷ','ㄹ','ㅁ','ㅂ','ㅅ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ',
-         'ㅏ','ㅑ','ㅓ','ㅕ','ㅗ','ㅛ','ㅜ','ㅠ','ㅡ','ㅣ']
 
 # 한글 자모 분해 함수
 CHOSUNG_LIST = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ']
@@ -21,17 +16,7 @@ def decompose(char):
     return [chosung, jungsung] + ([jongsung] if jongsung else [])
 
 # 페이지 설정
-st.set_page_config(page_title="LEGO Hangeul Tetris", layout="wide")
-
-# 스타일 정의
-st.markdown("""
-    <style>
-    .char-box-yellow { font-size: 120px; color: #FFD43B; font-weight: bold; border: 6px solid #FFD43B; padding: 35px; border-radius: 15px; text-align: center; margin: 15px; }
-    .char-box-blue { font-size: 120px; color: white; background-color: #228BE6; font-weight: bold; border: 6px solid #1c7ed6; padding: 35px; border-radius: 15px; text-align: center; margin: 15px; }
-    .ing-brick { font-size: 80px; color: #228BE6; font-weight: bold; margin: 12px; }
-    .lego-key { font-size: 120px; font-weight: bold; border: 6px solid #495057; border-radius: 12px; padding: 35px; margin: 20px; text-align: center; }
-    </style>
-""", unsafe_allow_html=True)
+st.set_page_config(page_title="두벌식 LEGO Keyboard", layout="wide")
 
 # 세션 상태 초기화
 if 'current_input' not in st.session_state:
@@ -40,8 +25,6 @@ if 'completed_indices' not in st.session_state:
     st.session_state.completed_indices = set()
 if 'current_target_idx' not in st.session_state:
     st.session_state.current_target_idx = 0
-if 'current_candidates' not in st.session_state:
-    st.session_state.current_candidates = []
 if 'last_sentence' not in st.session_state:
     st.session_state.last_sentence = ""
 
@@ -53,7 +36,6 @@ if st.session_state.last_sentence != target_sentence:
     st.session_state.current_input = []
     st.session_state.completed_indices = set()
     st.session_state.current_target_idx = 0
-    st.session_state.current_candidates = []
     st.session_state.last_sentence = target_sentence
 
 # 배경 문장 크게 표시
@@ -67,16 +49,15 @@ for idx, char in enumerate(target_sentence):
             st.write("␣")
             continue
         if idx in st.session_state.completed_indices:
-            st.markdown(f"<div class='char-box-blue'>{char}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='font-size:120px; color:white; background:#228BE6; border:6px solid #1c7ed6; padding:35px; border-radius:15px; text-align:center;'>{char}</div>", unsafe_allow_html=True)
         elif idx == st.session_state.current_target_idx:
-            st.markdown(f"<div class='char-box-yellow'>{char}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='font-size:120px; color:#FFD43B; border:6px solid #FFD43B; padding:35px; border-radius:15px; text-align:center;'>{char}</div>", unsafe_allow_html=True)
             if len(st.session_state.current_input) > 0:
-                build_str = "".join([f"<span class='ing-brick'>{b}</span>" for b in st.session_state.current_input])
-                st.markdown(build_str, unsafe_allow_html=True)
+                st.write(" + ".join(st.session_state.current_input))
             else:
-                st.markdown("<div style='font-size:80px; color:#868e96;'>아직 입력 없음</div>", unsafe_allow_html=True)
+                st.write("아직 입력 없음")
         else:
-            st.markdown(f"<div class='char-box-yellow'>{char}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='font-size:120px; color:#FFD43B; border:6px solid #FFD43B; padding:35px; border-radius:15px; text-align:center;'>{char}</div>", unsafe_allow_html=True)
 
 # 자동 매칭
 if len(st.session_state.current_input) > 0 and st.session_state.current_target_idx < len(target_sentence):
@@ -86,60 +67,45 @@ if len(st.session_state.current_input) > 0 and st.session_state.current_target_i
         st.session_state.completed_indices.add(st.session_state.current_target_idx)
         st.session_state.current_target_idx += 1
         st.session_state.current_input = []
-        st.session_state.current_candidates = []  # 다음 단어에서 새 자판 생성
         time.sleep(0.2)
         st.rerun()
     elif len(st.session_state.current_input) > len(jamos):
         st.session_state.current_input = []  # 오입력 시 리셋
         st.rerun()
 
-# 하단 자판: 단어 끝날 때까지 고정
+# 두벌식 자판 배열
+row1_keys = ['ㅂ','ㅈ','ㄷ','ㄱ','ㅅ','ㅛ','ㅕ','ㅑ']
+row2_keys = ['ㅁ','ㄴ','ㅇ','ㄹ','ㅎ','ㅗ','ㅓ','ㅏ','ㅣ']
+row3_keys = ['ㅋ','ㅌ','ㅊ','ㅍ','ㅠ','ㅜ','ㅡ']
+
 st.write("---")
-st.markdown("<h2 style='color:#228BE6; font-size:100px;'>⌨️ LEGO Brick Keyboard</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='color:#228BE6; font-size:100px;'>⌨️ 두벌식 LEGO Keyboard</h2>", unsafe_allow_html=True)
 
-if st.session_state.current_target_idx < len(target_sentence):
-    # 현재 단어 전체 자모 모으기
-    word = ""
-    for idx in range(st.session_state.current_target_idx, len(target_sentence)):
-        if target_sentence[idx] == " ":
-            break
-        word += target_sentence[idx]
-    word_jamos = []
-    for ch in word:
-        word_jamos.extend(decompose(ch))
+# 윗줄
+row1 = st.columns(len(row1_keys))
+for i, key in enumerate(row1_keys):
+    with row1[i]:
+        if st.button(key, key=f"row1_{i}", use_container_width=True):
+            st.session_state.current_input.append(key)
+            st.rerun()
 
-    # 자판이 비어있으면 새로 생성 (단어 시작 시 한 번만)
-    if not st.session_state.current_candidates:
-        candidates = list(set(word_jamos))
-        while len(candidates) < 10:
-            rand_jamo = random.choice(JAMOS)
-            if rand_jamo not in candidates:
-                candidates.append(rand_jamo)
-        random.shuffle(candidates)
-        st.session_state.current_candidates = candidates
-else:
-    st.session_state.current_candidates = []
+# 중간줄
+row2 = st.columns(len(row2_keys))
+for i, key in enumerate(row2_keys):
+    with row2[i]:
+        if st.button(key, key=f"row2_{i}", use_container_width=True):
+            st.session_state.current_input.append(key)
+            st.rerun()
 
-# 2줄 자판 표시 (고정된 candidates 사용, 최소 1개 컬럼 보장)
-candidates = st.session_state.current_candidates
-if candidates:
-    half = max(1, len(candidates)//2)
-    row1 = st.columns(half)
-    row2 = st.columns(max(1, len(candidates)-half))
+# 아랫줄
+row3 = st.columns(len(row3_keys))
+for i, key in enumerate(row3_keys):
+    with row3[i]:
+        if st.button(key, key=f"row3_{i}", use_container_width=True):
+            st.session_state.current_input.append(key)
+            st.rerun()
 
-    for i, key in enumerate(candidates[:half]):
-        with row1[i]:
-            if st.button(key, key=f"btn_row1_{key}_{i}", use_container_width=True):
-                st.session_state.current_input.append(key)
-                st.rerun()
-
-    for i, key in enumerate(candidates[half:]):
-        with row2[i]:
-            if st.button(key, key=f"btn_row2_{key}_{i}", use_container_width=True):
-                st.session_state.current_input.append(key)
-                st.rerun()
-
-# Backspace, Reset, Space 버튼 나란히 배치
+# Backspace, Reset, Space 버튼
 col_backspace, col_reset, col_space = st.columns(3)
 
 with col_backspace:
@@ -153,12 +119,11 @@ with col_reset:
         st.session_state.current_input = []
         st.session_state.completed_indices = set()
         st.session_state.current_target_idx = 0
-        st.session_state.current_candidates = []
         st.rerun()
 
 with col_space:
     if st.button("Space ␣"):
         if st.session_state.current_target_idx < len(target_sentence) and target_sentence[st.session_state.current_target_idx] == " ":
             st.session_state.current_target_idx += 1
-            st.session_state.current_candidates = []
         st.rerun()
+

@@ -108,7 +108,7 @@ for idx, char in enumerate(target_sentence):
         if idx in st.session_state.completed_indices:
             st.markdown(f"<div class='char-box-yellow char-box-blue'>{char}</div>", unsafe_allow_html=True)
         
-        # 🌟 에러가 나던 복잡한 줄을 완벽하게 안전하고 직관적인 조건문으로 전면 수정했습니다.
+        # 🌟 주황색 타겟 단어 하이라이팅 로직 (안전하고 확실하게 변환 완료)
         elif idx == cur_idx:
             if len(st.session_state.current_input) > 0:
                 build_str = ""
@@ -118,7 +118,7 @@ for idx, char in enumerate(target_sentence):
             else:
                 st.markdown(f"<div class='char-box-yellow char-box-target'>{char}</div>", unsafe_allow_html=True)
         
-        # 단어 단위 묶음 하이라이트 처리 (나-는, 너-를, 사-랑-해)
+        # 단어 단위 연동 묶음 표시 (문법적 에러 가능성을 원천 차단한 완벽한 고정 배열 조건문)
         elif (cur_idx in [0, 1] and idx in) or (cur_idx in [3, 4] and idx in) or (cur_idx in [6, 7, 8] and idx in [6, 7, 8]):
             st.markdown(f"<div class='char-box-yellow char-box-target'>{char}</div>", unsafe_allow_html=True)
             

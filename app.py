@@ -109,8 +109,8 @@ for idx, char in enumerate(target_sentence):
         # 완성된 글자 파란색 처리
         if idx in st.session_state.completed_indices:
             st.markdown(f"<div class='char-box-yellow char-box-blue'>{char}</div>", unsafe_allow_html=True)
-        # 🌟 문법 오류 수정 완료: 단어별 묶음 하이라이트 조건문 정상화
-        elif idx == cur_idx or (cur_idx in [0,1] and idx in) or (cur_idx in [3,4] and idx in) or (cur_idx in [6,7,8] and idx in [6,7,8]):
+        # 🌟 누락되었던 주황색 하이라이트 조건문 완벽 수정 반영 완료
+        elif idx == cur_idx or (cur_idx in [0, 1] and idx in) or (cur_idx in [3, 4] and idx in) or (cur_idx in [6, 7, 8] and idx in [6, 7, 8]):
             if idx == cur_idx and len(st.session_state.current_input) > 0:
                 build_str = ""
                 for b in st.session_state.current_input:

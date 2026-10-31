@@ -29,7 +29,7 @@ st.markdown("""
     .char-box-yellow { font-size: 120px; color: #FFD43B; font-weight: bold; border: 6px solid #FFD43B; padding: 35px; border-radius: 15px; text-align: center; margin: 15px; }
     .char-box-blue { font-size: 120px; color: white; background-color: #228BE6; font-weight: bold; border: 6px solid #1c7ed6; padding: 35px; border-radius: 15px; text-align: center; margin: 15px; }
     .ing-brick { font-size: 80px; color: #228BE6; font-weight: bold; margin: 12px; }
-    .lego-key { font-size: 100px; font-weight: bold; border: 6px solid #495057; border-radius: 12px; padding: 30px; margin: 20px; text-align: center; }
+    .lego-key { font-size: 120px; font-weight: bold; border: 6px solid #495057; border-radius: 12px; padding: 35px; margin: 20px; text-align: center; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -80,7 +80,7 @@ if len(st.session_state.current_input) > 0 and st.session_state.current_target_i
 
 # 하단 자판: 단어 끝날 때까지 유지
 st.write("---")
-st.markdown("<h2 style='color:#228BE6; font-size:80px;'>⌨️ LEGO Brick Keyboard</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='color:#228BE6; font-size:100px;'>⌨️ LEGO Brick Keyboard</h2>", unsafe_allow_html=True)
 
 if st.session_state.current_target_idx < len(target_sentence):
     # 현재 단어 전체 자모 모으기
@@ -96,11 +96,11 @@ if st.session_state.current_target_idx < len(target_sentence):
 else:
     word_jamos = []
 
-# 후보 자모 8개 (정답 + 랜덤)
-candidates = word_jamos + random.sample(JAMOS, max(0, 8 - len(word_jamos)))
+# 후보 자모 10개 (정답 + 랜덤)
+candidates = word_jamos + random.sample(JAMOS, max(0, 10 - len(word_jamos)))
 random.shuffle(candidates)
 
-cols = st.columns(8)
+cols = st.columns(10)
 for i, key in enumerate(candidates):
     with cols[i]:
         if st.button(key, key=f"btn_{i}", use_container_width=True):

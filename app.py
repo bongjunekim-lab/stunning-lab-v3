@@ -1,6 +1,6 @@
 import streamlit as st
 
-# 1. 페이지 와이드 고정 및 레고 폰트, 단어별 힌트 컬러 CSS 정의
+# 1. 페이지 와이드 고정 및 디자인 스타일 정의
 st.set_page_config(page_title="LEGO Hangeul Tetris", page_icon="🧱", layout="wide")
 
 st.markdown("""
@@ -72,9 +72,7 @@ if 'completed_indices' not in st.session_state:
 if 'current_target_idx' not in st.session_state:
     st.session_state.current_target_idx = 0
 
-# 🛠️ Developer Sandbox
-st.markdown("<div class='admin-box' style='background-color: #e8f4fd; padding: 15px; border-radius:10px; border: 1px solid #74c0fc; margin-bottom:20px;'>🛠️ <b>Developer Sandbox</b> (단어 짝 맞춤 자판 가변화 버전)</div>", unsafe_allow_html=True)
-target_sentence = "나는 너를 사랑해" # 흐름 제어를 위해 기본 타겟 문장 고정
+target_sentence = "나는 너를 사랑해"
 
 # 3. 미션 가이드 문구
 st.markdown(f"""
@@ -84,7 +82,7 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# 4. 상단 블랙 보드 (비어있는 검은색 상자)
+# 4. 상단 블랙 보드
 st.write("### 🏗️ Upward LEGO Assembly Board (상단 조립판)")
 st.markdown("<div class='black-board'></div>", unsafe_allow_html=True)
 
@@ -106,18 +104,24 @@ for idx, char in enumerate(target_sentence):
                 st.markdown("<div class='space-dash'></div>", unsafe_allow_html=True)
             continue
             
-        # 완성된 글자 파란색 처리
+        # 완성된 글자 처리
         if idx in st.session_state.completed_indices:
             st.markdown(f"<div class='char-box-yellow char-box-blue'>{char}</div>", unsafe_allow_html=True)
-        # 🌟 누락되었던 주황색 하이라이트 조건문 완벽 수정 반영 완료
-        elif idx == cur_idx or (cur_idx in [0, 1] and idx in) or (cur_idx in [3, 4] and idx in) or (cur_idx in [6, 7, 8] and idx in [6, 7, 8]):
-            if idx == cur_idx and len(st.session_state.current_input) > 0:
+        
+        # 🌟 에러가 나던 복잡한 줄을 완벽하게 안전하고 직관적인 조건문으로 전면 수정했습니다.
+        elif idx == cur_idx:
+            if len(st.session_state.current_input) > 0:
                 build_str = ""
                 for b in st.session_state.current_input:
                     build_str += f"<span class='ing-brick'>{b}</span>"
                 st.markdown(f"<div class='char-box-yellow char-box-target'>{build_str}</div>", unsafe_allow_html=True)
             else:
                 st.markdown(f"<div class='char-box-yellow char-box-target'>{char}</div>", unsafe_allow_html=True)
+        
+        # 단어 단위 묶음 하이라이트 처리 (나-는, 너-를, 사-랑-해)
+        elif (cur_idx in [0, 1] and idx in) or (cur_idx in [3, 4] and idx in) or (cur_idx in [6, 7, 8] and idx in [6, 7, 8]):
+            st.markdown(f"<div class='char-box-yellow char-box-target'>{char}</div>", unsafe_allow_html=True)
+            
         else:
             st.markdown(f"<div class='char-box-yellow'>{char}</div>", unsafe_allow_html=True)
 

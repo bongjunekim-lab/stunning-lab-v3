@@ -139,4 +139,10 @@ if candidates:
                 st.session_state.current_input.append(key)
                 st.rerun()
 
+# Backspace 버튼 (오타 지우기)
+if st.button("Backspace ⌫"):
+    if len(st.session_state.current_input) > 0:
+        st.session_state.current_input.pop()
+    st.rerun()
 
+# Space Bar 버튼 (단어 완성

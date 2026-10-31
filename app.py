@@ -63,6 +63,8 @@ for idx, char in enumerate(target_sentence):
             if len(st.session_state.current_input) > 0:
                 build_str = "".join([f"<span class='ing-brick'>{b}</span>" for b in st.session_state.current_input])
                 st.markdown(build_str, unsafe_allow_html=True)
+            else:
+                st.markdown("<div style='font-size:80px; color:#868e96;'>아직 입력 없음</div>", unsafe_allow_html=True)
         else:
             st.markdown(f"<div class='char-box-yellow'>{char}</div>", unsafe_allow_html=True)
 
@@ -125,6 +127,13 @@ for i, key in enumerate(candidates[half:]):
         if st.button(key, key=f"btn_row2_{key}_{i}", use_container_width=True):
             st.session_state.current_input.append(key)
             st.rerun()
+
+# Space Bar 버튼 (단어 완성 후)
+if st.session_state.current_target_idx < len(target_sentence) and target_sentence[st.session_state.current_target_idx] == " ":
+    if st.button("Space ␣", key="btn_space", use_container_width=True):
+        st.session_state.current_target_idx += 1
+        st.session_state.current_candidates = []
+        st.rerun()
 
 # Reset 버튼
 if st.button("Reset 🔄"):

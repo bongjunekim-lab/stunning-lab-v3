@@ -26,10 +26,10 @@ st.set_page_config(page_title="LEGO Hangeul Tetris", layout="wide")
 # 스타일 정의
 st.markdown("""
     <style>
-    .char-box-yellow { font-size: 80px; color: #FFD43B; font-weight: bold; border: 3px solid #FFD43B; padding: 25px; border-radius: 12px; text-align: center; margin: 10px; }
-    .char-box-blue { font-size: 80px; color: white; background-color: #228BE6; font-weight: bold; border: 3px solid #1c7ed6; padding: 25px; border-radius: 12px; text-align: center; margin: 10px; }
-    .ing-brick { font-size: 50px; color: #228BE6; font-weight: bold; margin: 8px; }
-    .lego-key { font-size: 60px; font-weight: bold; border: 3px solid #495057; border-radius: 10px; padding: 20px; margin: 10px; text-align: center; }
+    .char-box-yellow { font-size: 100px; color: #FFD43B; font-weight: bold; border: 5px solid #FFD43B; padding: 30px; border-radius: 15px; text-align: center; margin: 15px; }
+    .char-box-blue { font-size: 100px; color: white; background-color: #228BE6; font-weight: bold; border: 5px solid #1c7ed6; padding: 30px; border-radius: 15px; text-align: center; margin: 15px; }
+    .ing-brick { font-size: 70px; color: #228BE6; font-weight: bold; margin: 10px; }
+    .lego-key { font-size: 80px; font-weight: bold; border: 5px solid #495057; border-radius: 12px; padding: 25px; margin: 15px; text-align: center; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -42,10 +42,10 @@ if 'current_target_idx' not in st.session_state:
     st.session_state.current_target_idx = 0
 
 # 문장 입력
-target_sentence = st.text_input("게임판에 띄우고 싶은 문장을 입력하세요:", value="친구여 어디서 어디에 있나")
+target_sentence = st.text_input("게임판에 띄우고 싶은 문장을 입력하세요:", value="나는 너를 사랑해")
 
 # 배경 문장 크게 표시
-st.markdown(f"<h1 style='color:#FFD43B; text-align:center; font-size:90px;'>{target_sentence}</h1>", unsafe_allow_html=True)
+st.markdown(f"<h1 style='color:#FFD43B; text-align:center; font-size:120px;'>{target_sentence}</h1>", unsafe_allow_html=True)
 
 # Word Assembly Line
 cols = st.columns(len(target_sentence))
@@ -64,7 +64,7 @@ for idx, char in enumerate(target_sentence):
         else:
             st.markdown(f"<div class='char-box-yellow'>{char}</div>", unsafe_allow_html=True)
 
-# 자동 매칭
+# 자동 매칭 (단어 단위 유지)
 if len(st.session_state.current_input) > 0 and st.session_state.current_target_idx < len(target_sentence):
     current_target_char = target_sentence[st.session_state.current_target_idx]
     jamos = decompose(current_target_char)
@@ -78,18 +78,26 @@ if len(st.session_state.current_input) > 0 and st.session_state.current_target_i
         st.session_state.current_input = []  # 오입력 시 리셋
         st.rerun()
 
-# 하단 자판: 6개 후보 자모 표시
+# 하단 자판: 단어 끝날 때까지 유지
 st.write("---")
-st.markdown("<h2 style='color:#228BE6;'>⌨️ LEGO Brick Keyboard</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='color:#228BE6; font-size:60px;'>⌨️ LEGO Brick Keyboard</h2>", unsafe_allow_html=True)
 
 if st.session_state.current_target_idx < len(target_sentence):
-    current_target_char = target_sentence[st.session_state.current_target_idx]
-    correct_jamos = decompose(current_target_char)
+    # 현재 단어 전체 자모 모으기
+    word = ""
+    for idx in range(st.session_state.current_target_idx, len(target_sentence)):
+        if target_sentence[idx] == " ":
+            break
+        word += target_sentence[idx]
+    # 단어 전체 자모 분해
+    word_jamos = []
+    for ch in word:
+        word_jamos.extend(decompose(ch))
 else:
-    correct_jamos = []
+    word_jamos = []
 
 # 후보 자모 6개 (정답 + 랜덤)
-candidates = correct_jamos + random.sample(JAMOS, max(0, 6 - len(correct_jamos)))
+candidates = word_jamos + random.sample(JAMOS, max(0, 6 - len(word_jamos)))
 random.shuffle(candidates)
 
 cols = st.columns(6)
@@ -97,7 +105,9 @@ for i, key in enumerate(candidates):
     with cols[i]:
         if st.button(key, key=f"btn_{i}", use_container_width=True):
             st.session_state.current_input.append(key)
-            # 정답 체크
+            # 현재 글자 자모 확인
+            current_target_char = target_sentence[st.session_state.current_target_idx]
+            correct_jamos = decompose(current_target_char)
             if st.session_state.current_input == correct_jamos:
                 st.session_state.completed_indices.add(st.session_state.current_target_idx)
                 st.session_state.current_target_idx += 1

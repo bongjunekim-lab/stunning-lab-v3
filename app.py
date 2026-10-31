@@ -42,9 +42,19 @@ if 'current_target_idx' not in st.session_state:
     st.session_state.current_target_idx = 0
 if 'current_candidates' not in st.session_state:
     st.session_state.current_candidates = []
+if 'last_sentence' not in st.session_state:
+    st.session_state.last_sentence = ""
 
 # 문장 입력
 target_sentence = st.text_input("게임판에 띄우고 싶은 문장을 입력하세요:", value="나는 너를 사랑해")
+
+# 새로운 문장이 입력되면 상태 초기화
+if st.session_state.last_sentence != target_sentence:
+    st.session_state.current_input = []
+    st.session_state.completed_indices = set()
+    st.session_state.current_target_idx = 0
+    st.session_state.current_candidates = []
+    st.session_state.last_sentence = target_sentence
 
 # 배경 문장 크게 표시
 st.markdown(f"<h1 style='color:#FFD43B; text-align:center; font-size:140px;'>{target_sentence}</h1>", unsafe_allow_html=True)
@@ -110,40 +120,23 @@ if st.session_state.current_target_idx < len(target_sentence):
 else:
     st.session_state.current_candidates = []
 
-# 2줄 자판 표시 (고정된 candidates 사용)
+# 2줄 자판 표시 (고정된 candidates 사용, 최소 1개 컬럼 보장)
 candidates = st.session_state.current_candidates
-half = len(candidates)//2
-row1 = st.columns(half)
-row2 = st.columns(len(candidates)-half)
+if candidates:
+    half = max(1, len(candidates)//2)
+    row1 = st.columns(half)
+    row2 = st.columns(max(1, len(candidates)-half))
 
-for i, key in enumerate(candidates[:half]):
-    with row1[i]:
-        if st.button(key, key=f"btn_row1_{key}_{i}", use_container_width=True):
-            st.session_state.current_input.append(key)
-            st.rerun()
+    for i, key in enumerate(candidates[:half]):
+        with row1[i]:
+            if st.button(key, key=f"btn_row1_{key}_{i}", use_container_width=True):
+                st.session_state.current_input.append(key)
+                st.rerun()
 
-for i, key in enumerate(candidates[half:]):
-    with row2[i]:
-        if st.button(key, key=f"btn_row2_{key}_{i}", use_container_width=True):
-            st.session_state.current_input.append(key)
-            st.rerun()
+    for i, key in enumerate(candidates[half:]):
+        with row2[i]:
+            if st.button(key, key=f"btn_row2_{key}_{i}", use_container_width=True):
+                st.session_state.current_input.append(key)
+                st.rerun()
 
-# Backspace 버튼 (오타 지우기)
-if st.button("Backspace ⌫"):
-    if len(st.session_state.current_input) > 0:
-        st.session_state.current_input.pop()
-    st.rerun()
 
-# Space Bar 버튼 (단어 완성 후)
-if st.session_state.current_target_idx < len(target_sentence) and target_sentence[st.session_state.current_target_idx] == " ":
-    if st.button("Space ␣", key="btn_space", use_container_width=True):
-        st.session_state.current_target_idx += 1
-        st.session_state.current_candidates = []
-        st.rerun()
-
-# Reset 버튼 (전체 초기화)
-if st.button("Reset 🔄"):
-    st.session_state.current_input = []
-    st.session_state.completed_indices = set()
-    st.session_state.current_target_idx = 0
-         

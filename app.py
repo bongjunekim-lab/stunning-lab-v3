@@ -1,26 +1,22 @@
 import streamlit as st
-import hgtk  # pip install hgtk
+
+# 초성, 중성, 종성 리스트
+CHOSUNG_LIST = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ']
+JUNGSUNG_LIST = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ']
+JONGSUNG_LIST = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ']
+
+def decompose(char):
+    """한글 글자를 자모로 분해"""
+    code = ord(char) - 0xAC00
+    if code < 0 or code > 11171:
+        return [char]  # 한글이 아니면 그대로 반환
+    chosung = CHOSUNG_LIST[code // 588]
+    jungsung = JUNGSUNG_LIST[(code % 588) // 28]
+    jongsung = JONGSUNG_LIST[code % 28]
+    return [chosung, jungsung] + ([jongsung] if jongsung else [])
 
 # 페이지 설정
 st.set_page_config(page_title="LEGO Hangeul Tetris", page_icon="🧱", layout="wide")
-
-# 스타일 정의
-st.markdown("""
-    <style>
-    .lego-title { text-align: center; color: #FFD43B; font-size: 40px; font-weight: bold; font-family: 'Arial Black', sans-serif; text-shadow: 2px 2px #000; }
-    .mission-box { background-color: #f1f3f5; border-radius: 15px; padding: 20px; text-align: center; border: 3px dashed #FFD43B; margin-bottom: 20px; }
-    .black-board { background-color: #212529; border-radius: 15px; min-height: 180px; margin-bottom: 30px; box-shadow: inset 0px 0px 20px rgba(0,0,0,0.8); }
-    .char-box-yellow { color: #FFD43B; font-size: 36px; font-weight: bold; font-family: 'Malgun Gothic', sans-serif; padding: 12px 22px; border: 2px solid #FFD43B; border-radius: 8px; background-color: transparent; text-shadow: 1px 1px #000; min-width: 75px; text-align: center; }
-    .char-box-target { border: 3px solid #ff922b !important; background-color: rgba(255, 146, 43, 0.1) !important; box-shadow: 0px 0px 12px #ff922b; }
-    .char-box-blue { color: white !important; background-color: #228BE6 !important; border: 2px solid #1c7ed6 !important; box-shadow: 0px 4px #1864ab; text-shadow: none; }
-    .ing-brick { color: #228BE6; font-size: 34px; font-weight: bold; }
-    .space-dash { width: 35px; height: 50px; border: 2px dashed #495057; border-radius: 6px; margin: auto; }
-    .space-blue { border: 2px solid #228BE6; background-color: rgba(34, 139, 230, 0.2); }
-    </style>
-""", unsafe_allow_html=True)
-
-st.markdown("<div class='lego-title'>🧱 LEGO HANGEUL REVERSE TETRIS</div>", unsafe_allow_html=True)
-st.write("---")
 
 # 세션 상태 초기화
 if 'current_input' not in st.session_state:
@@ -30,73 +26,52 @@ if 'completed_indices' not in st.session_state:
 if 'current_target_idx' not in st.session_state:
     st.session_state.current_target_idx = 0
 
-# 개발자 샌드박스
+# 문장 입력
 target_sentence = st.text_input("게임판에 띄우고 싶은 문장을 입력하세요:", value="나는 너를 사랑해")
 
-# 상단 배경 문장 표시
-st.markdown(f"""
-    <div class='mission-box'>
-        <h3>🎵 Mission Sound: "I love you."</h3>
-        <p style='font-size:22px; color:#212529; font-weight:bold;'>배경 문장: {target_sentence}</p>
-        <p style='font-size:18px; color:#495057;'>Target Sentence: <b>{target_sentence}</b></p>
-    </div>
-""", unsafe_allow_html=True)
+# 상단 배경 문장
+st.markdown(f"### 배경 문장: {target_sentence}")
 
-st.write("### 🏗️ Upward LEGO Assembly Board (상단 조립판)")
-st.markdown("<div class='black-board'></div>", unsafe_allow_html=True)
-
-st.write("### 🔤 Word Assembly Line (가로형 조립 라인)")
+# Word Assembly Line
 cols = st.columns(len(target_sentence) + 2)
-
 for idx, char in enumerate(target_sentence):
     with cols[idx]:
         if char == " ":
             if st.session_state.current_target_idx == idx:
                 st.session_state.current_target_idx += 1
                 st.rerun()
-            if idx < st.session_state.current_target_idx:
-                st.markdown("<div class='space-dash space-blue'></div>", unsafe_allow_html=True)
-            else:
-                st.markdown("<div class='space-dash'></div>", unsafe_allow_html=True)
+            st.write("␣")
             continue
         if idx in st.session_state.completed_indices:
-            st.markdown(f"<div class='char-box-yellow char-box-blue'>{char}</div>", unsafe_allow_html=True)
+            st.write(f"✅ {char}")
         elif idx == st.session_state.current_target_idx:
             if len(st.session_state.current_input) > 0:
-                build_str = "".join([f"<span class='ing-brick'>{b}</span>" for b in st.session_state.current_input])
-                st.markdown(f"<div class='char-box-yellow char-box-target'>{build_str}</div>", unsafe_allow_html=True)
+                st.write("".join(st.session_state.current_input))
             else:
-                st.markdown(f"<div class='char-box-yellow char-box-target'>{char}</div>", unsafe_allow_html=True)
+                st.write(f"👉 {char}")
         else:
-            st.markdown(f"<div class='char-box-yellow'>{char}</div>", unsafe_allow_html=True)
+            st.write(char)
 
-# 자동 매칭 로직: hgtk로 자모 분해
+# 자동 매칭
 if len(st.session_state.current_input) > 0:
     current_target_char = target_sentence[st.session_state.current_target_idx]
-    try:
-        jamos = list(hgtk.text.decompose(current_target_char))
-        # hgtk는 '강' → ['ㄱ','ㅏ','ㅇ'] 이런 식으로 분해
-        if st.session_state.current_input == jamos:
-            st.session_state.completed_indices.add(st.session_state.current_target_idx)
-            st.session_state.current_target_idx += 1
-            st.session_state.current_input = []
-            st.balloons()
-            st.rerun()
-    except Exception:
-        pass
-    if len(st.session_state.current_input) >= 4:  # 오입력 방지
+    jamos = decompose(current_target_char)
+    if st.session_state.current_input == jamos:
+        st.session_state.completed_indices.add(st.session_state.current_target_idx)
+        st.session_state.current_target_idx += 1
+        st.session_state.current_input = []
+        st.balloons()
+        st.rerun()
+    elif len(st.session_state.current_input) >= 4:
         st.session_state.current_input = []
         st.rerun()
 
-# 하단 자판: 현재 타겟 글자에 맞게 자동 변경
+# 하단 자판: 현재 글자 자모 자동 표시
 st.write("---")
-st.write("### ⌨️ LEGO Brick Keyboard (하단 자판)")
+st.write("### ⌨️ LEGO Brick Keyboard")
 
 current_target_char = target_sentence[st.session_state.current_target_idx]
-try:
-    available_keys = list(hgtk.text.decompose(current_target_char))
-except Exception:
-    available_keys = []
+available_keys = decompose(current_target_char)
 
 cols = st.columns(len(available_keys) + 2)
 for i, key in enumerate(available_keys):
@@ -115,7 +90,7 @@ with cols[-2]:
 
 # Space Bar 버튼
 with cols[-1]:
-    if st.button("⌨️ Space Bar (간격 띄우기)", key="btn_space", use_container_width=True):
+    if st.button("Space ␣", key="btn_space", use_container_width=True):
         if target_sentence[st.session_state.current_target_idx] == " ":
             st.session_state.current_target_idx += 1
         st.rerun()

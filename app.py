@@ -1,3 +1,20 @@
+좋습니다, 이제 말씀하신 **스페이스바와 전체 지우기(Reset)** 버튼이 항상 보이도록 반영한 **최종 전체 코드**를 드리겠습니다.  
+
+---
+
+### 개선 사항 요약
+- **스페이스바 항상 표시**: 공백 위치에 도달하지 않아도 버튼이 보이고, 누르면 공백을 건너뜁니다.  
+- **Reset 버튼 위치 개선**: Backspace와 나란히 표시해서 직관적으로 찾을 수 있습니다.  
+- **입력 공간 유지**: 입력이 없어도 “아직 입력 없음” 표시.  
+- **자판 단어 단위 고정**: 단어가 끝날 때까지 자판 배열은 변하지 않음.  
+- **중복 없는 난수 자모**: 정답 자모 + 랜덤 자모, 중복 제거 후 10개 유지.  
+- **컬럼 오류 방지**: 최소 1개 컬럼 보장.  
+- **새 문장 입력 시 자동 초기화**: 이전 상태가 남지 않도록 보완.  
+
+---
+
+### 전체 코드
+```python
 import streamlit as st
 import time
 import random
@@ -139,10 +156,10 @@ if candidates:
                 st.session_state.current_input.append(key)
                 st.rerun()
 
-# Backspace 버튼 (오타 지우기)
-if st.button("Backspace ⌫"):
-    if len(st.session_state.current_input) > 0:
-        st.session_state.current_input.pop()
-    st.rerun()
+# Backspace & Reset 버튼 나란히 배치
+col_backspace, col_reset, col_space = st.columns(3)
 
-# Space Bar 버튼 (단어 완성
+with col_backspace:
+    if st.button("Backspace ⌫"):
+        if len(st.session_state.current_input) > 0:
+            st.session_state.current 

@@ -1,4 +1,5 @@
 import streamlit as st
+import hgtk  # pip install hgtk
 
 # 페이지 설정
 st.set_page_config(page_title="LEGO Hangeul Tetris", page_icon="🧱", layout="wide")
@@ -32,10 +33,11 @@ if 'current_target_idx' not in st.session_state:
 # 개발자 샌드박스
 target_sentence = st.text_input("게임판에 띄우고 싶은 문장을 입력하세요:", value="나는 너를 사랑해")
 
-# 상단 레이아웃
+# 상단 배경 문장 표시
 st.markdown(f"""
     <div class='mission-box'>
         <h3>🎵 Mission Sound: "I love you."</h3>
+        <p style='font-size:22px; color:#212529; font-weight:bold;'>배경 문장: {target_sentence}</p>
         <p style='font-size:18px; color:#495057;'>Target Sentence: <b>{target_sentence}</b></p>
     </div>
 """, unsafe_allow_html=True)
@@ -68,26 +70,21 @@ for idx, char in enumerate(target_sentence):
         else:
             st.markdown(f"<div class='char-box-yellow'>{char}</div>", unsafe_allow_html=True)
 
-# 자동 매칭 규칙
-match_rules = {
-    "나": ['ㄴ', 'ㅏ'],
-    "는": ['ㄴ', 'ㅡ', 'ㄴ'],
-    "너": ['ㄴ', 'ㅓ'],
-    "를": ['ㄹ', 'ㅡ', 'ㄹ'],
-    "사": ['ㅅ', 'ㅏ'],
-    "랑": ['ㄹ', 'ㅏ', 'ㅇ'],
-    "해": ['ㅎ', 'ㅐ'],
-}
-
+# 자동 매칭 로직: hgtk로 자모 분해
 if len(st.session_state.current_input) > 0:
     current_target_char = target_sentence[st.session_state.current_target_idx]
-    if current_target_char in match_rules and st.session_state.current_input == match_rules[current_target_char]:
-        st.session_state.completed_indices.add(st.session_state.current_target_idx)
-        st.session_state.current_target_idx += 1
-        st.session_state.current_input = []
-        st.balloons()
-        st.rerun()
-    elif len(st.session_state.current_input) >= 3:
+    try:
+        jamos = list(hgtk.text.decompose(current_target_char))
+        # hgtk는 '강' → ['ㄱ','ㅏ','ㅇ'] 이런 식으로 분해
+        if st.session_state.current_input == jamos:
+            st.session_state.completed_indices.add(st.session_state.current_target_idx)
+            st.session_state.current_target_idx += 1
+            st.session_state.current_input = []
+            st.balloons()
+            st.rerun()
+    except Exception:
+        pass
+    if len(st.session_state.current_input) >= 4:  # 오입력 방지
         st.session_state.current_input = []
         st.rerun()
 
@@ -96,7 +93,10 @@ st.write("---")
 st.write("### ⌨️ LEGO Brick Keyboard (하단 자판)")
 
 current_target_char = target_sentence[st.session_state.current_target_idx]
-available_keys = match_rules.get(current_target_char, [])
+try:
+    available_keys = list(hgtk.text.decompose(current_target_char))
+except Exception:
+    available_keys = []
 
 cols = st.columns(len(available_keys) + 2)
 for i, key in enumerate(available_keys):

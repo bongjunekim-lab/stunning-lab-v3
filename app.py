@@ -38,40 +38,23 @@ if st.session_state.last_sentence != target_sentence:
     st.session_state.current_target_idx = 0
     st.session_state.last_sentence = target_sentence
 
-# 배경 문장 크게 표시
-st.markdown(f"<h1 style='color:#FFD43B; text-align:center; font-size:140px;'>{target_sentence}</h1>", unsafe_allow_html=True)
-
-# Word Assembly Line
+# 문장 표시 + 자모 분해
 cols = st.columns(len(target_sentence))
 for idx, char in enumerate(target_sentence):
     with cols[idx]:
-        if char == " ":
-            st.write("␣")
-            continue
-        if idx in st.session_state.completed_indices:
-            st.markdown(f"<div style='font-size:120px; color:white; background:#228BE6; border:6px solid #1c7ed6; padding:35px; border-radius:15px; text-align:center;'>{char}</div>", unsafe_allow_html=True)
-        elif idx == st.session_state.current_target_idx:
-            st.markdown(f"<div style='font-size:120px; color:#FFD43B; border:6px solid #FFD43B; padding:35px; border-radius:15px; text-align:center;'>{char}</div>", unsafe_allow_html=True)
-            if len(st.session_state.current_input) > 0:
-                st.write(" + ".join(st.session_state.current_input))
-            else:
-                st.write("아직 입력 없음")
+        # 마지막 음절은 1.5배 크기
+        if idx == len(target_sentence)-1:
+            st.markdown(f"<div style='font-size:180px; color:#FFD43B; text-align:center;'>{char}</div>", unsafe_allow_html=True)
         else:
-            st.markdown(f"<div style='font-size:120px; color:#FFD43B; border:6px solid #FFD43B; padding:35px; border-radius:15px; text-align:center;'>{char}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='font-size:120px; color:#FFD43B; text-align:center;'>{char}</div>", unsafe_allow_html=True)
 
-# 자동 매칭
-if len(st.session_state.current_input) > 0 and st.session_state.current_target_idx < len(target_sentence):
-    current_target_char = target_sentence[st.session_state.current_target_idx]
-    jamos = decompose(current_target_char)
-    if st.session_state.current_input == jamos:
-        st.session_state.completed_indices.add(st.session_state.current_target_idx)
-        st.session_state.current_target_idx += 1
-        st.session_state.current_input = []
-        time.sleep(0.2)
-        st.rerun()
-    elif len(st.session_state.current_input) > len(jamos):
-        st.session_state.current_input = []  # 오입력 시 리셋
-        st.rerun()
+        # 자모 분해 표시 (빈 공간 유지)
+        jamos = decompose(char)
+        if jamos:
+            st.markdown("<div style='font-size:60px; color:#228BE6; text-align:center;'>"
+                        + " + ".join(jamos) + "</div>", unsafe_allow_html=True)
+        else:
+            st.markdown("<div style='font-size:60px; color:#868e96; text-align:center;'>아직 입력 없음</div>", unsafe_allow_html=True)
 
 # 두벌식 자판 배열
 row1_keys = ['ㅂ','ㅈ','ㄷ','ㄱ','ㅅ','ㅛ','ㅕ','ㅑ']
@@ -126,4 +109,3 @@ with col_space:
         if st.session_state.current_target_idx < len(target_sentence) and target_sentence[st.session_state.current_target_idx] == " ":
             st.session_state.current_target_idx += 1
         st.rerun()
-

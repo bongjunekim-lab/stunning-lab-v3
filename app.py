@@ -1,6 +1,6 @@
 import streamlit as st
 
-# 1. 페이지 설정
+# 페이지 설정
 st.set_page_config(page_title="LEGO Hangeul Tetris", page_icon="🧱", layout="wide")
 
 # 스타일 정의
@@ -21,7 +21,7 @@ st.markdown("""
 st.markdown("<div class='lego-title'>🧱 LEGO HANGEUL REVERSE TETRIS</div>", unsafe_allow_html=True)
 st.write("---")
 
-# 2. 세션 상태 초기화
+# 세션 상태 초기화
 if 'current_input' not in st.session_state:
     st.session_state.current_input = []
 if 'completed_indices' not in st.session_state:
@@ -29,10 +29,10 @@ if 'completed_indices' not in st.session_state:
 if 'current_target_idx' not in st.session_state:
     st.session_state.current_target_idx = 0
 
-# 3. 개발자 샌드박스
+# 개발자 샌드박스
 target_sentence = st.text_input("게임판에 띄우고 싶은 문장을 입력하세요:", value="나는 너를 사랑해")
 
-# 4. 상단 레이아웃
+# 상단 레이아웃
 st.markdown(f"""
     <div class='mission-box'>
         <h3>🎵 Mission Sound: "I love you."</h3>
@@ -68,20 +68,19 @@ for idx, char in enumerate(target_sentence):
         else:
             st.markdown(f"<div class='char-box-yellow'>{char}</div>", unsafe_allow_html=True)
 
-# 5. 자동 매칭 로직
+# 자동 매칭 규칙
+match_rules = {
+    "나": ['ㄴ', 'ㅏ'],
+    "는": ['ㄴ', 'ㅡ', 'ㄴ'],
+    "너": ['ㄴ', 'ㅓ'],
+    "를": ['ㄹ', 'ㅡ', 'ㄹ'],
+    "사": ['ㅅ', 'ㅏ'],
+    "랑": ['ㄹ', 'ㅏ', 'ㅇ'],
+    "해": ['ㅎ', 'ㅐ'],
+}
+
 if len(st.session_state.current_input) > 0:
     current_target_char = target_sentence[st.session_state.current_target_idx]
-
-    match_rules = {
-        "나": ['ㄴ', 'ㅏ'],
-        "는": ['ㄴ', 'ㅡ', 'ㄴ'],
-        "너": ['ㄴ', 'ㅓ'],
-        "를": ['ㄹ', 'ㅡ', 'ㄹ'],
-        "사": ['ㅅ', 'ㅏ'],
-        "랑": ['ㄹ', 'ㅏ', 'ㅇ'],
-        "해": ['ㅎ', 'ㅐ'],
-    }
-
     if current_target_char in match_rules and st.session_state.current_input == match_rules[current_target_char]:
         st.session_state.completed_indices.add(st.session_state.current_target_idx)
         st.session_state.current_target_idx += 1
@@ -92,35 +91,31 @@ if len(st.session_state.current_input) > 0:
         st.session_state.current_input = []
         st.rerun()
 
-# 6. 하단 자판
+# 하단 자판: 현재 타겟 글자에 맞게 자동 변경
 st.write("---")
 st.write("### ⌨️ LEGO Brick Keyboard (하단 자판)")
 
-col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
-with col1:
-    if st.button("🔵 ㄴ", key="btn_n", use_container_width=True):
-        st.session_state.current_input.append("ㄴ"); st.rerun()
-with col2:
-    if st.button("🔴 ㅡ", key="btn_eu", use_container_width=True):
-        st.session_state.current_input.append("ㅡ"); st.rerun()
-with col3:
-    if st.button("🔵 ㄹ", key="btn_r", use_container_width=True):
-        st.session_state.current_input.append("ㄹ"); st.rerun()
-with col4:
-    if st.button("🔴 ㅏ", key="btn_a", use_container_width=True):
-        st.session_state.current_input.append("ㅏ"); st.rerun()
-with col5:
-    if st.button("🟡 ㅓ", key="btn_eo", use_container_width=True):
-        st.session_state.current_input.append("ㅓ"); st.rerun()
-with col6:
-    if st.button("🟢 ㅅ", key="btn_s", use_container_width=True):
-        st.session_state.current_input.append("ㅅ"); st.rerun()
-with col7:
-    if st.button("🟡 Reset 🔄", key="btn_reset", use_container_width=True):
-        st.session_state.current_input = []; st.session_state.completed_indices = set(); st.session_state.current_target_idx = 0; st.rerun()
+current_target_char = target_sentence[st.session_state.current_target_idx]
+available_keys = match_rules.get(current_target_char, [])
 
-st.write("")
-if st.button("⌨️ Space Bar (간격 띄우기) ───", key="btn_space", use_container_width=True):
-    if target_sentence[st.session_state.current_target_idx] == " ":
-        st.session_state.current_target_idx += 1
-    st.rerun()
+cols = st.columns(len(available_keys) + 2)
+for i, key in enumerate(available_keys):
+    with cols[i]:
+        if st.button(key, key=f"btn_{key}", use_container_width=True):
+            st.session_state.current_input.append(key)
+            st.rerun()
+
+# Reset 버튼
+with cols[-2]:
+    if st.button("Reset 🔄", key="btn_reset", use_container_width=True):
+        st.session_state.current_input = []
+        st.session_state.completed_indices = set()
+        st.session_state.current_target_idx = 0
+        st.rerun()
+
+# Space Bar 버튼
+with cols[-1]:
+    if st.button("⌨️ Space Bar (간격 띄우기)", key="btn_space", use_container_width=True):
+        if target_sentence[st.session_state.current_target_idx] == " ":
+            st.session_state.current_target_idx += 1
+        st.rerun()

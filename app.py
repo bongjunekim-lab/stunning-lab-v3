@@ -108,7 +108,7 @@ for idx, char in enumerate(target_sentence):
         if idx in st.session_state.completed_indices:
             st.markdown(f"<div class='char-box-yellow char-box-blue'>{char}</div>", unsafe_allow_html=True)
         
-        # 현재 조립 차례인 글자 하이라이팅 (에러 유발 구문 완전 삭제 후 간결화)
+        # 현재 실시간 입력 브릭 노출 타겟 포지션
         elif idx == cur_idx:
             if len(st.session_state.current_input) > 0:
                 build_str = ""
@@ -117,12 +117,23 @@ for idx, char in enumerate(target_sentence):
                 st.markdown(f"<div class='char-box-yellow char-box-target'>{build_str}</div>", unsafe_allow_html=True)
             else:
                 st.markdown(f"<div class='char-box-yellow char-box-target'>{char}</div>", unsafe_allow_html=True)
-                
-        # 아직 조립하지 않은 기본 글자 상태
+        
+        # 🌟 에러 완벽 해결: 빈 상자 없이 단어 단위 매칭 묶음을 안전하게 판정하는 구조
         else:
-            st.markdown(f"<div class='char-box-yellow'>{char}</div>", unsafe_allow_html=True)
+            is_target_word = False
+            if cur_idx in [0, 1] and idx in [0, 1]:
+                is_target_word = True
+            elif cur_idx in [3, 4] and idx in [3, 4]:
+                is_target_word = True
+            elif cur_idx in [6, 7, 8] and idx in [6, 7, 8]:
+                is_target_word = True
+                
+            if is_target_word:
+                st.markdown(f"<div class='char-box-yellow char-box-target'>{char}</div>", unsafe_allow_html=True)
+            else:
+                st.markdown(f"<div class='char-box-yellow'>{char}</div>", unsafe_allow_html=True)
 
-# 6. 현재 조립 단계별 힌트 자모음 정의 (간접 배경색 마킹용)
+# 6. 현재 조립 단계별 힌트 자모음 리스트 (완벽 고정형 배열 정의)
 hint_bricks = set()
 if cur_idx in [0, 1]:
     hint_bricks = {'ㄴ', 'ㅏ', 'ㅡ'}

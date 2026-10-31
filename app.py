@@ -26,10 +26,10 @@ st.set_page_config(page_title="LEGO Hangeul Tetris", layout="wide")
 # 스타일 정의
 st.markdown("""
     <style>
-    .char-box-yellow { font-size: 100px; color: #FFD43B; font-weight: bold; border: 5px solid #FFD43B; padding: 30px; border-radius: 15px; text-align: center; margin: 15px; }
-    .char-box-blue { font-size: 100px; color: white; background-color: #228BE6; font-weight: bold; border: 5px solid #1c7ed6; padding: 30px; border-radius: 15px; text-align: center; margin: 15px; }
-    .ing-brick { font-size: 70px; color: #228BE6; font-weight: bold; margin: 10px; }
-    .lego-key { font-size: 80px; font-weight: bold; border: 5px solid #495057; border-radius: 12px; padding: 25px; margin: 15px; text-align: center; }
+    .char-box-yellow { font-size: 120px; color: #FFD43B; font-weight: bold; border: 6px solid #FFD43B; padding: 35px; border-radius: 15px; text-align: center; margin: 15px; }
+    .char-box-blue { font-size: 120px; color: white; background-color: #228BE6; font-weight: bold; border: 6px solid #1c7ed6; padding: 35px; border-radius: 15px; text-align: center; margin: 15px; }
+    .ing-brick { font-size: 80px; color: #228BE6; font-weight: bold; margin: 12px; }
+    .lego-key { font-size: 100px; font-weight: bold; border: 6px solid #495057; border-radius: 12px; padding: 30px; margin: 20px; text-align: center; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -45,7 +45,7 @@ if 'current_target_idx' not in st.session_state:
 target_sentence = st.text_input("게임판에 띄우고 싶은 문장을 입력하세요:", value="나는 너를 사랑해")
 
 # 배경 문장 크게 표시
-st.markdown(f"<h1 style='color:#FFD43B; text-align:center; font-size:120px;'>{target_sentence}</h1>", unsafe_allow_html=True)
+st.markdown(f"<h1 style='color:#FFD43B; text-align:center; font-size:140px;'>{target_sentence}</h1>", unsafe_allow_html=True)
 
 # Word Assembly Line
 cols = st.columns(len(target_sentence))
@@ -80,7 +80,7 @@ if len(st.session_state.current_input) > 0 and st.session_state.current_target_i
 
 # 하단 자판: 단어 끝날 때까지 유지
 st.write("---")
-st.markdown("<h2 style='color:#228BE6; font-size:60px;'>⌨️ LEGO Brick Keyboard</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='color:#228BE6; font-size:80px;'>⌨️ LEGO Brick Keyboard</h2>", unsafe_allow_html=True)
 
 if st.session_state.current_target_idx < len(target_sentence):
     # 현재 단어 전체 자모 모으기
@@ -96,11 +96,11 @@ if st.session_state.current_target_idx < len(target_sentence):
 else:
     word_jamos = []
 
-# 후보 자모 6개 (정답 + 랜덤)
-candidates = word_jamos + random.sample(JAMOS, max(0, 6 - len(word_jamos)))
+# 후보 자모 8개 (정답 + 랜덤)
+candidates = word_jamos + random.sample(JAMOS, max(0, 8 - len(word_jamos)))
 random.shuffle(candidates)
 
-cols = st.columns(6)
+cols = st.columns(8)
 for i, key in enumerate(candidates):
     with cols[i]:
         if st.button(key, key=f"btn_{i}", use_container_width=True):

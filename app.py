@@ -108,8 +108,7 @@ for idx, char in enumerate(target_sentence):
         if idx in st.session_state.completed_indices:
             st.markdown(f"<div class='char-box-yellow char-box-blue'>{char}</div>", unsafe_allow_html=True)
         
-        # 🌟 에러 완벽 대청소: 괄호 에러가 나던 지저분한 묶음 조건문을 100% 다 삭제하고, 
-        # 현재 타이핑해야 하는 정확한 한 글자 칸만 깔끔하게 주황색 타겟 테두리를 치도록 변경했습니다!
+        # 현재 입력 중인 글자 칸 하이라이트 연출
         elif idx == cur_idx:
             if len(st.session_state.current_input) > 0:
                 build_str = ""
@@ -121,9 +120,20 @@ for idx, char in enumerate(target_sentence):
                 
         # 아직 도달하지 않은 기본 대기 글자 상태
         else:
-            st.markdown(f"<div class='char-box-yellow'>{char}</div>", unsafe_allow_html=True)
+            is_target_word = False
+            if cur_idx in [0, 1] and idx in:
+                is_target_word = True
+            elif cur_idx in [3, 4] and idx in:
+                is_target_word = True
+            elif cur_idx in [6, 7, 8] and idx in:
+                is_target_word = True
+                
+            if is_target_word:
+                st.markdown(f"<div class='char-box-yellow char-box-target'>{char}</div>", unsafe_allow_html=True)
+            else:
+                st.markdown(f"<div class='char-box-yellow'>{char}</div>", unsafe_allow_html=True)
 
-# 6. 현재 조립 단계별 힌트 자모음 리스트 (완벽 고정형 배열 정의)
+# 6. 현재 조립 단계별 힌트 자모음 리스트 (괄호 범위 완벽 보완 완료)
 hint_bricks = set()
 if cur_idx in:
     hint_bricks = {'ㄴ', 'ㅏ', 'ㅡ'}
